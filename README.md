@@ -4,6 +4,20 @@
 
 ---
 
+📸 Screenshots
+
+![Screenshot 2025-06-17 141935](https://github.com/user-attachments/assets/968fb61f-6856-4b28-8014-ac8230a68e54)
+![Screenshot 2025-06-17 142012](https://github.com/user-attachments/assets/cc4bc604-0d57-41b9-b362-9a36da88f6e1)
+![Screenshot 2025-06-17 142145](https://github.com/user-attachments/assets/0f72100c-4454-4a0f-a479-b09a9bdd9f00)
+![Screenshot 2025-06-17 142220](https://github.com/user-attachments/assets/5d39d3cb-f5d7-4a82-9656-316f1d5f49a2)
+![Screenshot 2025-06-17 142239](https://github.com/user-attachments/assets/916f6027-abca-45ff-9b4c-cb8bd4001263)
+![Screenshot 2025-06-17 142303](https://github.com/user-attachments/assets/97e2a00f-7d30-41c1-81d5-c1e0daeeb276)
+![Screenshot 2025-06-17 142318](https://github.com/user-attachments/assets/23e8f438-b84c-4031-8609-5fb911e1ff5e)
+
+
+
+---
+
 ## ✨ Features
 
 - **🎧 Music Library Management**
