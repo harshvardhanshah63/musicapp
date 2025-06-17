@@ -1,0 +1,1377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Harmony Music Player</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6c5ce7;
+            --secondary: #a29bfe;
+            --dark: #2d3436;
+            --light: #f5f6fa;
+            --accent: #fd79a8;
+            --danger: #ff7675;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--dark), #1e272e);
+            color: var(--light);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 100%;
+            padding: 20px;
+        }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logo i {
+            font-size: 28px;
+            color: var(--primary);
+        }
+        
+        .logo h1 {
+            font-size: 24px;
+            background: linear-gradient(to right, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 10px;
+        }
+        
+        .tab {
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .tab.active {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .tab:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .music-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .music-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .music-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .music-card img {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+            background-color: #555;
+        }
+        
+        .music-info {
+            padding: 15px;
+        }
+        
+        .music-info h3 {
+            margin-bottom: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .music-info p {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        
+        .music-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .action-btn {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 5px;
+        }
+        
+        .action-btn:hover {
+            color: white;
+            transform: scale(1.1);
+        }
+        
+        .action-btn.favorite {
+            color: var(--accent);
+        }
+        
+        .action-btn.delete {
+            color: var(--danger);
+        }
+        
+        .player-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to right, var(--dark), #1e272e);
+            padding: 15px;
+            box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            z-index: 100;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .player-container.active {
+            transform: translateY(0);
+        }
+        
+        .player-poster {
+            width: 60px;
+            height: 60px;
+            border-radius: 10px;
+            object-fit: cover;
+            background-color: #555;
+        }
+        
+        .player-info {
+            flex: 1;
+        }
+        
+        .player-info h4 {
+            margin-bottom: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .player-info p {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+        }
+        
+        .player-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .control-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .control-btn.play-pause {
+            background: var(--primary);
+        }
+        
+        .progress-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+        
+        .add-music-btn {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            z-index: 99;
+            transition: all 0.3s ease;
+        }
+        
+        .add-music-btn:hover {
+            transform: scale(1.1);
+            background: var(--accent);
+        }
+        
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        
+        .modal.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .modal-content {
+            background: linear-gradient(145deg, #2d3436, #1e272e);
+            padding: 25px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+        
+        .modal.active .modal-content {
+            transform: translateY(0);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-header h2 {
+            color: var(--primary);
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 24px;
+            cursor: pointer;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        .submit-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .submit-btn:hover {
+            background: var(--accent);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .empty-state i {
+            font-size: 50px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+        
+        .search-bar {
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .search-bar input {
+            width: 100%;
+            padding: 12px 15px 12px 45px;
+            border-radius: 25px;
+            border: none;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 16px;
+        }
+        
+        .search-bar i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        /* Import progress indicator */
+        .import-progress {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .import-progress.active {
+            display: block;
+        }
+        
+        .progress-text {
+            margin-top: 10px;
+        }
+        
+        /* Confirm delete modal */
+        .confirm-modal {
+            text-align: center;
+        }
+        
+        .confirm-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .confirm-btn {
+            flex: 1;
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .confirm-btn.cancel {
+            background: #dfe6e9;
+            color: #2d3436;
+        }
+        
+        .confirm-btn.delete {
+            background: var(--danger);
+            color: white;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .music-list {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            }
+            
+            .player-container {
+                flex-direction: column;
+                padding: 10px;
+            }
+            
+            .player-info {
+                text-align: center;
+                margin: 10px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-music"></i>
+                <h1>Harmony</h1>
+            </div>
+        </header>
+        
+        <div class="search-bar">
+            <i class="fas fa-search"></i>
+            <input type="text" id="search-input" placeholder="Search songs, artists...">
+        </div>
+        
+        <div class="tabs">
+            <div class="tab active" data-tab="all">All Songs</div>
+            <div class="tab" data-tab="recent">Recently Played</div>
+            <div class="tab" data-tab="favorites">Favorites</div>
+        </div>
+        
+        <div class="tab-content active" id="all-songs">
+            <h2>All Songs</h2>
+            <div class="music-list" id="all-songs-list">
+                <!-- Songs will be loaded here -->
+            </div>
+        </div>
+        
+        <div class="tab-content" id="recent-songs">
+            <h2>Recently Played</h2>
+            <div class="music-list" id="recent-songs-list">
+                <!-- Recently played songs will be loaded here -->
+            </div>
+        </div>
+        
+        <div class="tab-content" id="favorite-songs">
+            <h2>Favorites</h2>
+            <div class="music-list" id="favorite-songs-list">
+                <!-- Favorite songs will be loaded here -->
+            </div>
+        </div>
+        
+        <button class="add-music-btn" id="add-music-btn">
+            <i class="fas fa-plus"></i>
+        </button>
+        
+        <div class="player-container" id="player-container">
+            <div class="progress-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+            <img src="https://source.unsplash.com/random/300x300/?music,album" alt="Album Art" class="player-poster" id="player-poster">
+            <div class="player-info">
+                <h4 id="player-title">No song selected</h4>
+                <p id="player-artist">--</p>
+            </div>
+            <div class="player-controls">
+                <button class="control-btn" id="prev-btn">
+                    <i class="fas fa-step-backward"></i>
+                </button>
+                <button class="control-btn play-pause" id="play-pause-btn">
+                    <i class="fas fa-play" id="play-icon"></i>
+                </button>
+                <button class="control-btn" id="next-btn">
+                    <i class="fas fa-step-forward"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add Music Modal -->
+    <div class="modal" id="add-music-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add Music</h2>
+                <button class="close-btn" id="close-modal-btn">&times;</button>
+            </div>
+            <div class="import-options">
+                <button class="submit-btn" id="import-device-btn">
+                    <i class="fas fa-folder-open"></i> Import from Device
+                </button>
+                <div class="or-divider">OR</div>
+                <form id="add-music-form">
+                    <div class="form-group">
+                        <label for="music-title">Title</label>
+                        <input type="text" id="music-title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="music-artist">Artist</label>
+                        <input type="text" id="music-artist" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="music-album">Album (optional)</label>
+                        <input type="text" id="music-album">
+                    </div>
+                    <div class="form-group">
+                        <label for="music-file">Music File</label>
+                        <input type="file" id="music-file" accept="audio/*" required>
+                    </div>
+                    <button type="submit" class="submit-btn">Add Music</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Import Progress Modal -->
+    <div class="modal" id="import-progress-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Importing Songs</h2>
+            </div>
+            <div class="import-progress" id="import-progress">
+                <div class="spinner">
+                    <i class="fas fa-spinner fa-spin fa-3x"></i>
+                </div>
+                <div class="progress-text" id="progress-text">Processing files...</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Edit Metadata Modal -->
+    <div class="modal" id="edit-metadata-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Song Info</h2>
+                <button class="close-btn" id="close-edit-modal-btn">&times;</button>
+            </div>
+            <form id="edit-metadata-form">
+                <div class="form-group">
+                    <label for="edit-music-title">Title</label>
+                    <input type="text" id="edit-music-title" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-music-artist">Artist</label>
+                    <input type="text" id="edit-music-artist" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-music-album">Album (optional)</label>
+                    <input type="text" id="edit-music-album">
+                </div>
+                <input type="hidden" id="edit-music-id">
+                <button type="submit" class="submit-btn">Save Changes</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Confirm Delete Modal -->
+    <div class="modal" id="confirm-delete-modal">
+        <div class="modal-content confirm-modal">
+            <div class="modal-header">
+                <h2>Delete Song</h2>
+            </div>
+            <p>Are you sure you want to delete this song?</p>
+            <div class="confirm-buttons">
+                <button class="confirm-btn cancel" id="cancel-delete-btn">Cancel</button>
+                <button class="confirm-btn delete" id="confirm-delete-btn">Delete</button>
+            </div>
+            <input type="hidden" id="delete-music-id">
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM Elements
+            const tabs = document.querySelectorAll('.tab');
+            const tabContents = document.querySelectorAll('.tab-content');
+            const addMusicBtn = document.getElementById('add-music-btn');
+            const addMusicModal = document.getElementById('add-music-modal');
+            const importDeviceBtn = document.getElementById('import-device-btn');
+            const closeModalBtn = document.getElementById('close-modal-btn');
+            const addMusicForm = document.getElementById('add-music-form');
+            const importProgressModal = document.getElementById('import-progress-modal');
+            const progressText = document.getElementById('progress-text');
+            const editMetadataModal = document.getElementById('edit-metadata-modal');
+            const closeEditModalBtn = document.getElementById('close-edit-modal-btn');
+            const editMetadataForm = document.getElementById('edit-metadata-form');
+            const confirmDeleteModal = document.getElementById('confirm-delete-modal');
+            const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+            const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+            const playerContainer = document.getElementById('player-container');
+            const playPauseBtn = document.getElementById('play-pause-btn');
+            const playIcon = document.getElementById('play-icon');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const playerPoster = document.getElementById('player-poster');
+            const playerTitle = document.getElementById('player-title');
+            const playerArtist = document.getElementById('player-artist');
+            const progressBar = document.getElementById('progress-bar');
+            const searchInput = document.getElementById('search-input');
+            
+            // Audio element
+            const audio = new Audio();
+            let currentSongIndex = -1;
+            let songs = JSON.parse(localStorage.getItem('songs')) || [];
+            let recentSongs = JSON.parse(localStorage.getItem('recentSongs')) || [];
+            let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+            let songToDelete = null;
+            
+            // Initialize the app
+            init();
+            
+            // Tab switching
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tabContents.forEach(c => c.classList.remove('active'));
+                    
+                    tab.classList.add('active');
+                    const tabId = tab.getAttribute('data-tab');
+                    document.getElementById(`${tabId}-songs`).classList.add('active');
+                    
+                    // Refresh the displayed list
+                    if (tabId === 'all') {
+                        displaySongs(songs);
+                    } else if (tabId === 'recent') {
+                        displayRecentSongs();
+                    } else if (tabId === 'favorites') {
+                        displayFavoriteSongs();
+                    }
+                });
+            });
+            
+            // Modal controls
+            addMusicBtn.addEventListener('click', () => {
+                addMusicModal.classList.add('active');
+            });
+            
+            closeModalBtn.addEventListener('click', () => {
+                addMusicModal.classList.remove('active');
+            });
+            
+            closeEditModalBtn.addEventListener('click', () => {
+                editMetadataModal.classList.remove('active');
+            });
+            
+            cancelDeleteBtn.addEventListener('click', () => {
+                confirmDeleteModal.classList.remove('active');
+            });
+            
+            confirmDeleteBtn.addEventListener('click', () => {
+                if (songToDelete) {
+                    deleteSong(songToDelete);
+                    confirmDeleteModal.classList.remove('active');
+                    songToDelete = null;
+                }
+            });
+            
+            // Import from device
+            importDeviceBtn.addEventListener('click', function() {
+                const fileInput = document.createElement('input');
+                fileInput.type = 'file';
+                fileInput.multiple = true;
+                fileInput.accept = 'audio/*';
+                
+                fileInput.addEventListener('change', async function(e) {
+                    const files = Array.from(e.target.files);
+                    if (files.length === 0) return;
+                    
+                    addMusicModal.classList.remove('active');
+                    importProgressModal.classList.add('active');
+                    
+                    for (let i = 0; i < files.length; i++) {
+                        const file = files[i];
+                        progressText.textContent = `Processing ${i+1} of ${files.length}: ${file.name}`;
+                        
+                        try {
+                            const songData = await processAudioFile(file);
+                            songs.push(songData);
+                            localStorage.setItem('songs', JSON.stringify(songs));
+                            
+                            // Update UI after each file is processed
+                            if (i === files.length - 1 || i % 3 === 0) {
+                                displaySongs(songs);
+                            }
+                        } catch (error) {
+                            console.error(`Error processing ${file.name}:`, error);
+                        }
+                        
+                        // Small delay to allow UI to update
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                    }
+                    
+                    importProgressModal.classList.remove('active');
+                    displaySongs(songs);
+                });
+                
+                fileInput.click();
+            });
+            
+            // Process audio file
+            async function processAudioFile(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        // Try to extract metadata from filename
+                        const fileName = file.name.replace(/\.[^/.]+$/, ""); // Remove extension
+                        let title = fileName;
+                        let artist = "Unknown Artist";
+                        let album = "Unknown Album";
+                        
+                        // Simple filename parsing
+                        if (fileName.includes(" - ")) {
+                            const parts = fileName.split(" - ");
+                            artist = parts[0];
+                            title = parts[1];
+                        } else if (fileName.includes("_")) {
+                            const parts = fileName.split("_");
+                            artist = parts[0];
+                            title = parts[1];
+                        }
+                        
+                        const newSong = {
+                            id: Date.now() + Math.floor(Math.random() * 1000),
+                            title,
+                            artist,
+                            album,
+                            poster: 'https://source.unsplash.com/random/300x300/?music,album',
+                            audio: e.target.result,
+                            addedAt: new Date().toISOString(),
+                            fileInfo: {
+                                name: file.name,
+                                type: file.type,
+                                size: file.size
+                            }
+                        };
+                        
+                        resolve(newSong);
+                    };
+                    
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
+            }
+            
+            // Add new music manually
+            addMusicForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const title = document.getElementById('music-title').value;
+                const artist = document.getElementById('music-artist').value;
+                const album = document.getElementById('music-album').value;
+                const fileInput = document.getElementById('music-file');
+                
+                if (fileInput.files.length === 0) {
+                    alert('Please select a music file');
+                    return;
+                }
+                
+                const file = fileInput.files[0];
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    const newSong = {
+                        id: Date.now(),
+                        title,
+                        artist,
+                        album: album || 'Unknown Album',
+                        poster: 'https://source.unsplash.com/random/300x300/?music,album',
+                        audio: e.target.result,
+                        addedAt: new Date().toISOString(),
+                        fileInfo: {
+                            name: file.name,
+                            type: file.type,
+                            size: file.size
+                        }
+                    };
+                    
+                    songs.push(newSong);
+                    localStorage.setItem('songs', JSON.stringify(songs));
+                    
+                    // Reset form
+                    addMusicForm.reset();
+                    addMusicModal.classList.remove('active');
+                    
+                    // Refresh the list
+                    displaySongs(songs);
+                    
+                    alert('Song added successfully!');
+                };
+                
+                reader.readAsDataURL(file);
+            });
+            
+            // Edit metadata
+            editMetadataForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const id = parseInt(document.getElementById('edit-music-id').value);
+                const title = document.getElementById('edit-music-title').value;
+                const artist = document.getElementById('edit-music-artist').value;
+                const album = document.getElementById('edit-music-album').value;
+                
+                const songIndex = songs.findIndex(s => s.id === id);
+                if (songIndex !== -1) {
+                    songs[songIndex].title = title;
+                    songs[songIndex].artist = artist;
+                    songs[songIndex].album = album;
+                    
+                    localStorage.setItem('songs', JSON.stringify(songs));
+                    
+                    // Update UI
+                    displaySongs(songs);
+                    displayRecentSongs();
+                    displayFavoriteSongs();
+                    
+                    // Update player if this is the current song
+                    if (currentSongIndex === songIndex) {
+                        updatePlayerUI(songs[songIndex]);
+                    }
+                    
+                    editMetadataModal.classList.remove('active');
+                }
+            });
+            
+            // Delete song
+            function deleteSong(id) {
+                // Remove from songs array
+                songs = songs.filter(song => song.id !== id);
+                
+                // Remove from recent songs if present
+                recentSongs = recentSongs.filter(songId => songId !== id);
+                
+                // Remove from favorites if present
+                favorites = favorites.filter(songId => songId !== id);
+                
+                // Update local storage
+                localStorage.setItem('songs', JSON.stringify(songs));
+                localStorage.setItem('recentSongs', JSON.stringify(recentSongs));
+                localStorage.setItem('favorites', JSON.stringify(favorites));
+                
+                // If the deleted song was currently playing, stop it
+                if (currentSongIndex !== -1 && songs[currentSongIndex] && songs[currentSongIndex].id === id) {
+                    audio.pause();
+                    audio.src = '';
+                    playerContainer.classList.remove('active', 'playing');
+                    currentSongIndex = -1;
+                }
+                
+                // Refresh UI
+                displaySongs(songs);
+                displayRecentSongs();
+                displayFavoriteSongs();
+            }
+            
+            // Play/pause control
+            playPauseBtn.addEventListener('click', togglePlayPause);
+            
+            // Previous song
+            prevBtn.addEventListener('click', playPreviousSong);
+            
+            // Next song
+            nextBtn.addEventListener('click', playNextSong);
+            
+            // Audio time update
+            audio.addEventListener('timeupdate', updateProgressBar);
+            
+            // Song ended
+            audio.addEventListener('ended', playNextSong);
+            
+            // Progress bar click
+            progressBar.parentElement.addEventListener('click', function(e) {
+                const percent = e.offsetX / this.offsetWidth;
+                audio.currentTime = percent * audio.duration;
+                updateProgressBar();
+            });
+            
+            // Search functionality
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const filteredSongs = songs.filter(song => 
+                    song.title.toLowerCase().includes(searchTerm) || 
+                    song.artist.toLowerCase().includes(searchTerm)
+                );
+                
+                const activeTab = document.querySelector('.tab.active').getAttribute('data-tab');
+                
+                if (activeTab === 'all') {
+                    displaySongs(filteredSongs);
+                } else if (activeTab === 'recent') {
+                    const filteredRecent = recentSongs.filter(id => {
+                        const song = songs.find(s => s.id === id);
+                        return song && (
+                            song.title.toLowerCase().includes(searchTerm) || 
+                            song.artist.toLowerCase().includes(searchTerm)
+                        );
+                    }).map(id => songs.find(s => s.id === id));
+                    displayRecentSongs(filteredRecent);
+                } else if (activeTab === 'favorites') {
+                    const filteredFavorites = favorites.map(id => songs.find(s => s.id === id))
+                        .filter(song => song && (
+                            song.title.toLowerCase().includes(searchTerm) || 
+                            song.artist.toLowerCase().includes(searchTerm)
+                        ));
+                    displayFavoriteSongs(filteredFavorites);
+                }
+            });
+            
+            // Initialize the app
+            function init() {
+                displaySongs(songs);
+                displayRecentSongs();
+                displayFavoriteSongs();
+                
+                // Check if there was a song playing before refresh
+                const lastPlayed = localStorage.getItem('lastPlayed');
+                if (lastPlayed) {
+                    const song = songs.find(s => s.id === parseInt(lastPlayed));
+                    if (song) {
+                        currentSongIndex = songs.indexOf(song);
+                        loadSong(song);
+                        // Don't autoplay on refresh to be polite
+                    }
+                }
+            }
+            
+            // Display all songs
+            function displaySongs(songsToDisplay = songs) {
+                const allSongsList = document.getElementById('all-songs-list');
+                
+                if (songsToDisplay.length === 0) {
+                    allSongsList.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-music"></i>
+                            <h3>No songs found</h3>
+                            <p>Add some music to get started</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                allSongsList.innerHTML = songsToDisplay.map((song, index) => `
+                    <div class="music-card" data-id="${song.id}">
+                        <img src="${song.poster}" alt="${song.title}">
+                        <div class="music-info">
+                            <h3>${song.title}</h3>
+                            <p>${song.artist} • ${song.album}</p>
+                            <div class="music-actions">
+                                <button class="action-btn ${favorites.includes(song.id) ? 'favorite' : ''}" 
+                                    data-action="favorite" data-id="${song.id}">
+                                    <i class="fas fa-heart"></i>
+                                </button>
+                                <button class="action-btn" data-action="edit" data-id="${song.id}">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="action-btn delete" data-action="delete" data-id="${song.id}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                <button class="action-btn" data-action="play" data-id="${song.id}">
+                                    <i class="fas fa-play"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+                
+                // Add event listeners to the new elements
+                document.querySelectorAll('[data-action="play"]').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const id = parseInt(this.getAttribute('data-id'));
+                        playSongById(id);
+                    });
+                });
+                
+                document.querySelectorAll('[data-action="favorite"]').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const id = parseInt(this.getAttribute('data-id'));
+                        toggleFavorite(id);
+                    });
+                });
+                
+                document.querySelectorAll('[data-action="edit"]').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const id = parseInt(this.getAttribute('data-id'));
+                        editSongMetadata(id);
+                    });
+                });
+                
+                document.querySelectorAll('[data-action="delete"]').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const id = parseInt(this.getAttribute('data-id'));
+                        songToDelete = id;
+                        document.getElementById('delete-music-id').value = id;
+                        confirmDeleteModal.classList.add('active');
+                    });
+                });
+            }
+            
+            // Display recent songs
+            function displayRecentSongs(recentToDisplay = null) {
+                const recentSongsList = document.getElementById('recent-songs-list');
+                const recentSongsData = recentToDisplay || 
+                    recentSongs.map(id => songs.find(s => s.id === id)).filter(song => song);
+                
+                if (recentSongsData.length === 0) {
+                    recentSongsList.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-history"></i>
+                            <h3>No recent songs</h3>
+                            <p>Play some music to see them here</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                recentSongsList.innerHTML = recentSongsData.map(song => `
+                    <div class="music-card" data-id="${song.id}">
+                        <img src="${song.poster}" alt="${song.title}">
+                        <div class="music-info">
+                            <h3>${song.title}</h3>
+                            <p>${song.artist} • ${song.album}</p>
+                            <div class="music-actions">
+                                <button class="action-btn ${favorites.includes(song.id) ? 'favorite' : ''}" 
+                                    data-action="favorite" data-id="${song.id}">
+                                    <i class="fas fa-heart"></i>
+                                </button>
+                                <button class="action-btn" data-action="edit" data-id="${song.id}">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="action-btn delete" data-action="delete" data-id="${song.id}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                <button class="action-btn" data-action="play" data-id="${song.id}">
+                                    <i class="fas fa-play"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+                
+                // Add event listeners to the new elements
+                document.querySelectorAll('[data-action="play"]').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const id = parseInt(this.getAttribute('data-id'));
+                        playSongById(id);
+                    });
+                });
+                
+                document.querySelectorAll('[data-action="favorite"]').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const id = parseInt(this.getAttribute('data-id'));
+                        toggleFavorite(id);
+                    });
+                });
+                
+                document.querySelectorAll('[data-action="edit"]').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const id = parseInt(this.getAttribute('data-id'));
+                        editSongMetadata(id);
+                    });
+                });
+                
+                document.querySelectorAll('[data-action="delete"]').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const id = parseInt(this.getAttribute('data-id'));
+                        songToDelete = id;
+                        document.getElementById('delete-music-id').value = id;
+                        confirmDeleteModal.classList.add('active');
+                    });
+                });
+            }
+            
+            // Display favorite songs
+            function displayFavoriteSongs(favoritesToDisplay = null) {
+                const favoriteSongsList = document.getElementById('favorite-songs-list');
+                
+                // Get current favorites from localStorage to ensure we have latest
+                const currentFavorites = JSON.parse(localStorage.getItem('favorites')) || [];
+                
+                // Get favorite songs (filter out any that might have been deleted)
+                const favoriteSongsData = songs.filter(song => currentFavorites.includes(song.id));
+                
+                if (favoriteSongsData.length === 0) {
+                    favoriteSongsList.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-heart"></i>
+                            <h3>No favorite songs</h3>
+                            <p>Mark some songs as favorite to see them here</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                favoriteSongsList.innerHTML = favoriteSongsData.map(song => `
+                    <div class="music-card" data-id="${song.id}">
+                        <img src="${song.poster}" alt="${song.title}">
+                        <div class="music-info">
+                            <h3>${song.title}</h3>
+                            <p>${song.artist} • ${song.album}</p>
+                            <div class="music-actions">
+                                <button class="action-btn favorite" 
+                                    data-action="favorite" data-id="${song.id}">
+                                    <i class="fas fa-heart"></i>
+                                </button>
+                                <button class="action-btn" data-action="edit" data-id="${song.id}">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="action-btn delete" data-action="delete" data-id="${song.id}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                <button class="action-btn" data-action="play" data-id="${song.id}">
+                                    <i class="fas fa-play"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+                
+                // Add event listeners to the new elements
+                document.querySelectorAll('[data-action="play"]').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const id = parseInt(this.getAttribute('data-id'));
+                        playSongById(id);
+                    });
+                });
+                
+                document.querySelectorAll('[data-action="favorite"]').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const id = parseInt(this.getAttribute('data-id'));
+                        toggleFavorite(id);
+                    });
+                });
+                
+                document.querySelectorAll('[data-action="edit"]').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const id = parseInt(this.getAttribute('data-id'));
+                        editSongMetadata(id);
+                    });
+                });
+                
+                document.querySelectorAll('[data-action="delete"]').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const id = parseInt(this.getAttribute('data-id'));
+                        songToDelete = id;
+                        document.getElementById('delete-music-id').value = id;
+                        confirmDeleteModal.classList.add('active');
+                    });
+                });
+            }
+            
+            // Edit song metadata
+            function editSongMetadata(id) {
+                const song = songs.find(s => s.id === id);
+                if (!song) return;
+                
+                document.getElementById('edit-music-id').value = song.id;
+                document.getElementById('edit-music-title').value = song.title;
+                document.getElementById('edit-music-artist').value = song.artist;
+                document.getElementById('edit-music-album').value = song.album || '';
+                
+                editMetadataModal.classList.add('active');
+            }
+            
+            // Play song by ID
+            function playSongById(id) {
+                const songIndex = songs.findIndex(s => s.id === id);
+                if (songIndex !== -1) {
+                    currentSongIndex = songIndex;
+                    const song = songs[songIndex];
+                    loadSong(song);
+                    playSong();
+                    
+                    // Add to recent songs
+                    addToRecentSongs(id);
+                    
+                    // Update UI
+                    updatePlayerUI(song);
+                }
+            }
+            
+            // Load song into audio element
+            function loadSong(song) {
+                audio.src = song.audio;
+                localStorage.setItem('lastPlayed', song.id);
+            }
+            
+            // Play song
+            function playSong() {
+                audio.play();
+                playerContainer.classList.add('active', 'playing');
+                playIcon.classList.replace('fa-play', 'fa-pause');
+            }
+            
+            // Pause song
+            function pauseSong() {
+                audio.pause();
+                playerContainer.classList.remove('playing');
+                playIcon.classList.replace('fa-pause', 'fa-play');
+            }
+            
+            // Toggle play/pause
+            function togglePlayPause() {
+                if (audio.paused) {
+                    if (audio.src) {
+                        playSong();
+                    } else if (songs.length > 0) {
+                        // If nothing is playing, play the first song
+                        currentSongIndex = 0;
+                        const song = songs[currentSongIndex];
+                        loadSong(song);
+                        playSong();
+                        updatePlayerUI(song);
+                        addToRecentSongs(song.id);
+                    }
+                } else {
+                    pauseSong();
+                }
+            }
+            
+            // Play previous song
+            function playPreviousSong() {
+                if (songs.length === 0) return;
+                
+                currentSongIndex = (currentSongIndex - 1 + songs.length) % songs.length;
+                const song = songs[currentSongIndex];
+                loadSong(song);
+                playSong();
+                updatePlayerUI(song);
+                addToRecentSongs(song.id);
+            }
+            
+            // Play next song
+            function playNextSong() {
+                if (songs.length === 0) return;
+                
+                currentSongIndex = (currentSongIndex + 1) % songs.length;
+                const song = songs[currentSongIndex];
+                loadSong(song);
+                playSong();
+                updatePlayerUI(song);
+                addToRecentSongs(song.id);
+            }
+            
+            // Update progress bar
+            function updateProgressBar() {
+                const progress = (audio.currentTime / audio.duration) * 100;
+                progressBar.style.width = `${progress}%`;
+            }
+            
+            // Update player UI
+            function updatePlayerUI(song) {
+                playerPoster.src = song.poster;
+                playerTitle.textContent = song.title;
+                playerArtist.textContent = song.artist;
+            }
+            
+            // Add to recent songs
+            function addToRecentSongs(id) {
+                // Remove if already exists
+                recentSongs = recentSongs.filter(songId => songId !== id);
+                // Add to beginning
+                recentSongs.unshift(id);
+                // Keep only the last 10
+                if (recentSongs.length > 10) {
+                    recentSongs = recentSongs.slice(0, 10);
+                }
+                
+                localStorage.setItem('recentSongs', JSON.stringify(recentSongs));
+                
+                // Update recent songs display if that tab is active
+                if (document.querySelector('.tab.active').getAttribute('data-tab') === 'recent') {
+                    displayRecentSongs();
+                }
+            }
+            
+            // Toggle favorite
+            function toggleFavorite(id) {
+                id = parseInt(id);
+                const index = favorites.indexOf(id);
+                if (index === -1) {
+                    favorites.push(id);
+                } else {
+                    favorites.splice(index, 1);
+                }
+                
+                localStorage.setItem('favorites', JSON.stringify(favorites));
+                
+                // Update all instances of this song's favorite button
+                document.querySelectorAll(`[data-id="${id}"][data-action="favorite"]`).forEach(btn => {
+                    btn.classList.toggle('favorite', favorites.includes(id));
+                });
+                
+                // Update favorites display if that tab is active
+                if (document.querySelector('.tab.active').getAttribute('data-tab') === 'favorites') {
+                    displayFavoriteSongs();
+                }
+                
+                // Also update the main display to reflect changes
+                displaySongs(songs);
+            }
+        });
+    </script>
+</body>
+</html>
